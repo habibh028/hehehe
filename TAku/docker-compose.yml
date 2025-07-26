@@ -1,0 +1,68 @@
+version: "3.8"
+
+services:
+  web-smartfarm:
+    build:
+      context: ./app  # folder isi web Anda
+    deploy:
+      replicas: 4
+    networks:
+      - smartfarm-network
+
+  nginx:
+    image: nginx:latest
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./default.conf:/etc/nginx/conf.d/default.conf
+    networks:
+      - smartfarm-network
+
+  db:
+    image: mariadb
+    environment:
+      TZ: 'Asia/Jakarta'
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: smartfarm
+      MYSQL_USER: root
+      MYSQL_PASSWORD: "root"
+    volumes:
+      - ./mysql:/var/lib/mysql
+      - ./event.cnf:/etc/mysql/conf.d/event.cnf
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - smartfarm-network
+    command: ['--event-scheduler=ON']
+
+  phpmyadmin:
+    image: phpmyadmin
+    ports:
+      - "8080:80"
+    environment:
+      TZ: Asia/Jakarta
+      PMA_HOST: db
+      PMA_USER: root
+      PMA_PASSWORD: root
+    networks:
+      - smartfarm-network
+
+  portainer:
+    image: portainer/portainer-ce
+    ports:
+      - "9000:9000"
+      - "9443:9443"
+    command: -H unix:///var/run/docker.sock
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer-data:/data
+    networks:
+      - smartfarm-network
+
+
+networks:
+  smartfarm-network:
+    driver: overlay
+
+volumes:
+  portainer-data:
