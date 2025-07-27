@@ -2,8 +2,7 @@ version: "3.8"
 
 services:
   web-smartfarm:
-    build:
-      context: ./app  # folder isi web Anda
+    image: smartfarm-web:latest
     deploy:
       replicas: 4
     networks:
