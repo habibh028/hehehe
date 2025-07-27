@@ -1,12 +1,13 @@
-FROM php:8.2-fpm
+## Use the official Nginx image as the base image
+FROM nginx:latest
 
 RUN docker-php-ext-install mysqli
 
-COPY . /var/www/html/
+## Copy the default Nginx configuration file
+COPY default.conf /etc/nginx/conf.d/default.conf
 
-RUN chown -R www-data:www-data /var/www/html
+## Copy the web application code to the container
+COPY .app/ /var/www/html/
 
-WORKDIR /var/www/html
-
-EXPOSE 9000
-
+## Expose port 80 for HTTP traffic
+EXPOSE 80
